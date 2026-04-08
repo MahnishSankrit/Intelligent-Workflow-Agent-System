@@ -10,14 +10,10 @@ import javax.servlet.http.*;
 public class AuthFilter implements Filter {
 
     @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
-        // optional
-    }
+    public void init(FilterConfig filterConfig) throws ServletException { }
 
     @Override
-    public void destroy() {
-        // optional
-    }
+    public void destroy() { }
 
     @SuppressWarnings("unchecked")
     @Override
@@ -31,13 +27,17 @@ public class AuthFilter implements Filter {
 
         String path = req.getRequestURI();
 
-        // Allow login page
-        if (path.contains("login.jsp") || path.contains("login")) {
+        // Allow static resources and login-related paths
+        if (path.contains("login.jsp") || path.contains("/login")
+                || path.endsWith(".css") || path.endsWith(".js")
+                || path.endsWith(".png") || path.endsWith(".jpg")
+                || path.endsWith(".ico") || path.endsWith(".svg")
+                || path.contains("/fonts/")) {
             chain.doFilter(request, response);
             return;
         }
 
-        // Not logged in
+        // Not logged in — redirect to login
         if (session == null || session.getAttribute("user") == null) {
             res.sendRedirect("login.jsp");
             return;
@@ -48,6 +48,13 @@ public class AuthFilter implements Filter {
         // Protect delete user
         if (path.contains("deleteUser") &&
                 (perms == null || !perms.contains("DELETE_USER"))) {
+            res.sendRedirect("accessDenied.jsp");
+            return;
+        }
+
+        // Protect add user
+        if (path.contains("addUser") &&
+                (perms == null || !perms.contains("CREATE_USER"))) {
             res.sendRedirect("accessDenied.jsp");
             return;
         }

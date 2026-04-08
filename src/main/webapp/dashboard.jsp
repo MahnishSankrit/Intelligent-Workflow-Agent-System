@@ -1,147 +1,167 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.util.List" %>
 <%@ page import="model.User" %>
-
-<html>
+<%@ page import="java.sql.*" %>
+<%@ page import="util.DBConnection" %>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <title>Dashboard</title>
-
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            background: #f4f6f9;
-        }
-
-        /* Navbar */
-        .navbar {
-            background: #2c3e50;
-            color: white;
-            padding: 15px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        /* Container */
-        .container {
-            padding: 30px;
-        }
-
-        .card {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-
-        /* Buttons */
-        .btn {
-            display: inline-block;
-            padding: 10px 15px;
-            margin: 10px 10px 10px 0;
-            border-radius: 5px;
-            text-decoration: none;
-            color: white;
-            font-size: 14px;
-            border: none;
-            cursor: pointer;
-        }
-
-        .btn-blue { background: #3498db; }
-        .btn-green { background: #2ecc71; }
-        .btn-red { background: #e74c3c; }
-        .btn-purple { background: #9b59b6; }
-
-        .btn:hover {
-            opacity: 0.9;
-        }
-
-        ul {
-            padding-left: 20px;
-        }
-
-        .logout-container {
-            text-align: center;
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IWAS — Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
-
 <body>
 
 <%
 User user = (User) session.getAttribute("user");
-
 if (user == null) {
     response.sendRedirect("login.jsp");
     return;
 }
-
 List<String> perms = (List<String>) session.getAttribute("permissions");
+int roleId = user.getRoleId();
+String roleName = roleId == 1 ? "Admin" : (roleId == 2 ? "Manager" : "Employee");
+String roleClass = roleName.toLowerCase();
+
+// Fetch some quick stats
+int totalUsers = 0, totalTasks = 0, overdueTasks = 0, activeTasks = 0;
+try {
+    Connection con = DBConnection.getConnection();
+    Statement stmt = con.createStatement();
+
+    ResultSet r1 = stmt.executeQuery("SELECT COUNT(*) FROM users");
+    if (r1.next()) totalUsers = r1.getInt(1);
+
+    ResultSet r2 = stmt.executeQuery("SELECT COUNT(*) FROM tasks");
+    if (r2.next()) totalTasks = r2.getInt(1);
+
+    ResultSet r3 = stmt.executeQuery("SELECT COUNT(*) FROM tasks WHERE status='overdue' OR (deadline < CURDATE() AND status NOT IN ('completed','overdue'))");
+    if (r3.next()) overdueTasks = r3.getInt(1);
+
+    if (roleId == 3) {
+        PreparedStatement ps = con.prepareStatement("SELECT COUNT(*) FROM tasks WHERE assigned_to=? AND status IN ('pending','in_progress')");
+        ps.setInt(1, user.getId());
+        ResultSet r4 = ps.executeQuery();
+        if (r4.next()) activeTasks = r4.getInt(1);
+    } else {
+        ResultSet r4 = stmt.executeQuery("SELECT COUNT(*) FROM tasks WHERE status IN ('pending','in_progress')");
+        if (r4.next()) activeTasks = r4.getInt(1);
+    }
+
+    con.close();
+} catch (Exception e) {
+    e.printStackTrace();
+}
 %>
 
-<!-- Navbar -->
-<div class="navbar">
-    <div><strong>RBAC System</strong></div>
-    <div>Welcome, <%= user.getName() %></div>
-</div>
+<div class="page-wrapper">
 
-<div class="container">
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <div class="brand-icon">&#x1F916;</div>
+            IWAS
+        </div>
+        <div class="navbar-right">
+            <span class="role-badge <%= roleClass %>"><%= roleName %></span>
+            <div class="navbar-user">
+                <div class="avatar"><%= user.getName().substring(0, 1).toUpperCase() %></div>
+                <span><%= user.getName() %></span>
+            </div>
+            <form action="logout" method="post" style="margin:0;">
+                <button type="submit" class="btn btn-ghost btn-sm">&#x1F6AA; Logout</button>
+            </form>
+        </div>
+    </nav>
 
-    <!-- Role Info -->
-    <div class="card">
-        <h2>
-            <% if (user.getRoleId() == 1) { %>
-                Admin Dashboard
-            <% } else { %>
-                User Dashboard
-            <% } %>
-        </h2>
+    <div class="container">
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1>
+                <% if (roleId == 1) { %>
+                    &#x1F6E1; Admin Dashboard
+                <% } else if (roleId == 2) { %>
+                    &#x1F4CB; Manager Dashboard
+                <% } else { %>
+                    &#x1F4BC; Employee Dashboard
+                <% } %>
+            </h1>
+            <div class="nav-links">
+                <a href="tasks" class="btn btn-primary btn-sm">&#x1F4DD; Tasks</a>
+                <a href="agent" class="btn btn-info btn-sm">&#x1F9E0; Agent Insights</a>
+                <% if (perms != null && perms.contains("CREATE_USER")) { %>
+                    <a href="manageUsers.jsp" class="btn btn-success btn-sm">&#x1F465; Manage Users</a>
+                <% } %>
+                <% if (perms != null && perms.contains("MANAGE_ROLES")) { %>
+                    <a href="manageRoles.jsp" class="btn btn-warning btn-sm">&#x1F511; Manage Roles</a>
+                <% } %>
+                <% if (perms != null && perms.contains("VIEW_REPORT")) { %>
+                    <a href="report.jsp" class="btn btn-ghost btn-sm">&#x1F4CA; System Report</a>
+                <% } %>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value"><%= roleId == 3 ? activeTasks : totalUsers %></div>
+                <div class="stat-label"><%= roleId == 3 ? "My Active Tasks" : "Total Users" %></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value"><%= totalTasks %></div>
+                <div class="stat-label">Total Tasks</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value"><%= activeTasks %></div>
+                <div class="stat-label"><%= roleId == 3 ? "Pending" : "Active Tasks" %></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" style="<%= overdueTasks > 0 ? "-webkit-text-fill-color: #ef4444;" : "" %>"><%= overdueTasks %></div>
+                <div class="stat-label">Overdue</div>
+            </div>
+        </div>
+
+        <!-- Quick Actions & Permissions -->
+        <div class="content-grid">
+            <!-- Quick Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h3><span class="card-icon purple">&#x26A1;</span> Quick Actions</h3>
+                </div>
+                <div class="nav-links" style="flex-direction: column;">
+                    <a href="tasks" class="btn btn-primary w-full">&#x1F4DD; View & Manage Tasks</a>
+                    <a href="agent" class="btn btn-info w-full">&#x1F9E0; View Agent Intelligence</a>
+                    <% if (roleId <= 2) { %>
+                        <a href="tasks" class="btn btn-success w-full">&#x2795; Create New Task</a>
+                    <% } %>
+                    <% if (roleId == 1) { %>
+                        <a href="manageUsers.jsp" class="btn btn-warning w-full">&#x1F465; User Management</a>
+                    <% } %>
+                </div>
+            </div>
+
+            <!-- Permissions Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h3><span class="card-icon green">&#x1F512;</span> Your Permissions</h3>
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                <%
+                if (perms != null) {
+                    for (String p : perms) {
+                %>
+                    <span class="status-badge completed"><%= p %></span>
+                <%
+                    }
+                }
+                %>
+                </div>
+            </div>
+        </div>
+
     </div>
-
-    <!-- Actions -->
-    <div class="card">
-        <h3>Actions</h3>
-
-        <% if (perms != null && perms.contains("CREATE_USER")) { %>
-            <a href="manageUsers.jsp" class="btn btn-green">Add User</a>
-        <% } %>
-
-        <% if (perms != null && perms.contains("DELETE_USER")) { %>
-            <a href="manageUsers.jsp" class="btn btn-red">Delete User</a>
-        <% } %>
-
-        <% if (perms != null && perms.contains("VIEW_REPORT")) { %>
-            <a href="report.jsp" class="btn btn-blue">View Report</a>
-        <% } %>
-    </div>
-
-    <!-- Permissions -->
-    <div class="card">
-        <h3>Your Permissions</h3>
-
-        <ul>
-        <%
-        if (perms != null) {
-            for (String p : perms) {
-        %>
-            <li><%= p %></li>
-        <%
-            }
-        }
-        %>
-        </ul>
-    </div>
-
-    <!-- Logout -->
-    <div class="card logout-container">
-        <form action="logout" method="post">
-            <button type="submit" class="btn btn-purple">
-                Logout
-            </button>
-        </form>
-    </div>
-
 </div>
 
 </body>

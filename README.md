@@ -1,202 +1,115 @@
-# Role-Based Access Control (RBAC) System
+# Intelligent Workflow Agent System (IWAS)
 
-A **web-based Role-Based Access Control (RBAC)** application built using **Java Servlets, JSP, and MySQL**.  
-This system manages user access efficiently by assigning **roles** to users and **permissions** to roles (instead of assigning permissions directly to users).
-
----
-
-## Mini Project Report
-
-**Submitted by:** [Your Name]  
-**Course:** [Your Course Name]  
-**Under Guidance of:** [Teacher Name]  
-**College:** [Your College Name]  
-**Year:** 2026  
+A **behavior-driven intelligent workflow manager** built on top of a secure Role-Based Access Control (RBAC) foundation. Developed using **Java Servlets, JSP, MySQL, and Maven**, IWAS manages entire corporate workflows by treating different roles (Employee, Manager, Admin) as intelligent agents that actively monitor, analyze, and recommend actions in real-time.
 
 ---
 
-## Abstract
+## 🎯 Abstract
 
-The Role-Based Access Control (RBAC) System is a web-based application developed using Java Servlets, JSP, and MySQL. The system is designed to manage user access efficiently by assigning roles and permissions. Instead of assigning permissions directly to users, permissions are associated with roles, and users are assigned roles.
+The Intelligent Workflow Agent System (IWAS) evolves traditional RBAC into an active, intelligent environment. Instead of simple static permissions, IWAS incorporates an **Intelligence Engine** that continuously evaluates system data. It automatically detects overdue tasks, calculates employee workload risks, tracks productivity metrics, and surfaces actionable, AI-style recommendations dynamically. 
 
-The system ensures secure authentication and authorization, allowing users to perform only permitted actions. Admin users can manage roles, permissions, and users dynamically. This approach improves scalability, security, and maintainability of access control in an organization.
-
----
-
-## Objectives
-
-- To implement secure user authentication and authorization  
-- To manage roles and permissions dynamically  
-- To restrict access based on user roles  
-- To provide an admin panel for managing users and roles  
-- To ensure data security and controlled access  
+The application is wrapped in a premium, glassmorphism-inspired dark-mode UI, providing a modern and highly responsive user experience across all administrative interfaces.
 
 ---
 
-## System Overview
+## ✨ Core Features & Agent Behaviors
 
-The system follows the RBAC model where:
-- **Users** are assigned **Roles**
-- **Roles** are associated with **Permissions**
-- A user’s allowed actions are based on the permissions of their assigned role
+The system provides 5 core active behaviors driven by the internal Intelligence Engine:
 
-When a user logs in, the system verifies credentials and retrieves the role and permissions associated with that user.
+1. **Monitoring Agent:** Autonomously scans task tables to calculate progress and flag overdue deadlines.
+2. **Workload Agent:** Counts active tasks per employee to flag high-risk or overloaded users dynamically.
+3. **Productivity Agent:** Computes "delay-to-completion" ratios to generate numeric Risk Scores for the workforce.
+4. **Recommendation Agent:** Generates actionable suggestions (e.g., "Reassign tasks from User X to User Y") based on real-time workload disparity.
+5. **Notification Agent:** Aggregates and routes intelligent alerts to the correct role-based dashboard.
 
-Based on these permissions, the system dynamically controls access to features such as adding users, deleting users, and viewing reports.
-
----
-
-## Working Flow
-
-1. User logs in using email and password  
-2. System authenticates user from database  
-3. User is assigned a role (Admin/User)  
-4. Permissions are fetched based on role  
-5. Permissions are stored in session  
-6. Dashboard displays allowed actions  
-7. User can only access permitted features  
-8. Unauthorized access is restricted  
+### Role-Specific Environments
+- **Admin Agent:** Manages global RBAC settings, users, and views system-wide risk metrics.
+- **Manager Agent:** Assigns tasks, monitors team workload balancing, and receives reassignment suggestions.
+- **Employee Agent:** Updates task status and receives personal alerts regarding overdue deadlines or heavy workloads.
 
 ---
 
-## System Architecture
+## 🏗️ System Architecture & Stack
 
-```
-JSP (Frontend/UI)
+**Technologies Used:**
+- **Frontend:** JSP, HTML5, Vanilla CSS (Custom Premium Dark Theme)
+- **Backend:** Java Servlets (Java 17/21 compatible)
+- **Intelligence Layer:** Reactive Java Services (`IntelligenceEngine.java`)
+- **Database:** MySQL
+- **Build System:** Apache Maven
+- **Server:** Embedded Tomcat 7 (via Maven plugin)
+
+```text
+JSP (Premium Dark UI)
         ↓
-Servlet (Controller Layer)
+Servlets (TaskServlet, AgentServlet, AuthControl)
         ↓
-DAO (Database Access Layer)
+IntelligenceEngine (Behavioral Analytics)  ↔  DAOs (Data Access)
         ↓
-MySQL Database
+MySQL Database (iwas_db)
 ```
 
 ---
 
-## Project Structure
+## 📂 Project Structure
 
-```
-RBAC-System/
+```text
+IWAS/
 │
-├── controller/ (Servlets)
-│   ├── AuthServlet.java
-│   ├── UserServlet.java
-│   ├── RoleServlet.java
-│   ├── PermissionServlet.java
+├── src/main/java/
+│   ├── agent/             # Core intelligence logic (IntelligenceEngine.java)
+│   ├── controller/        # Servlets (Login, Tasks, Agents, AuthFilter)
+│   ├── dao/               # Database Access Objects 
+│   ├── model/             # Entities (Task, TaskLog, EmployeeStat, User)
+│   └── util/              # Database Connection and Helpers
 │
-├── dao/
-│   ├── UserDAO.java
-│   ├── RoleDAO.java
-│   ├── PermissionDAO.java
+├── src/main/webapp/
+│   ├── css/style.css      # Premium Design System
+│   └── *.jsp              # Role-based Web Pages & Dashboards
 │
-├── model/
-│   ├── User.java
-│   ├── Role.java
-│   ├── Permission.java
+├── src/main/resources/
+│   ├── schema.sql         # Full Database Structure and Seed Data
+│   └── config.properties  # Secured database credentials
 │
-├── util/
-│   ├── DBConnection.java
-│
-├── jsp/
-│   ├── login.jsp
-│   ├── dashboard.jsp
-│   ├── manageUsers.jsp
-│   ├── manageRoles.jsp
-│   ├── managePermissions.jsp
-│
-└── web.xml
+├── pom.xml                # Maven Dependencies & Build Configuration
+└── .gitignore             # Secure ignores (target/, .properties, etc.)
 ```
 
 ---
 
-## Modules Description
+## 🚀 Getting Started
 
-### 1. Authentication Module
-- Handles user login  
-- Validates credentials from database  
-- Creates session for logged-in user  
+### 1. Database Setup
+1. Open your MySQL client.
+2. Source the provided schema script containing tables and seed data:
+   ```sql
+   source src/main/resources/schema.sql
+   ```
+*(Make sure your `src/main/resources/config.properties` contains your matching database credentials).*
 
-### 2. User Management Module
-- Admin can add new users  
-- Admin can delete users  
-- Role is assigned during user creation  
+### 2. Build and Run Server Locally
+Since the project utilizes Maven with an embedded Tomcat plugin, you do not need to install a standalone server. 
 
-### 3. Role Management Module
-- Admin can view roles  
-- Admin can assign permissions to roles  
-- Roles define access levels  
+Run the executable from your terminal:
+```bash
+mvn tomcat7:run
+```
 
-### 4. Permission Module
-- Permissions define actions like `CREATE_USER`, `DELETE_USER`  
-- Permissions are linked to roles  
-- Used for access control  
+### 3. Access Application
+Open your browser and navigate to:
+👉 **[http://localhost:8080/IWAS/](http://localhost:8080/IWAS/)**
 
-### 5. Report Module
-- Displays system summary  
-- Shows total users, roles, permissions  
-
-### 6. Logout Module
-- Ends user session  
-- Redirects to login page  
-
----
-
-## Database Design
-
-### Tables Used
-
-1. **users**
-   - `id, name, email, password, role_id`
-
-2. **roles**
-   - `id, name`
-
-3. **permissions**
-   - `id, name`
-
-4. **role_permissions**
-   - `role_id, permission_id`
+### Default Test Credentials
+| Role | Email | Password |
+|------|-------|----------|
+| **Admin** | admin@iwas.com | admin123 |
+| **Manager** | manager@iwas.com | manager123 |
+| **Employee** | emp1@iwas.com | emp123 |
 
 ---
 
-## Security Features
+## 🔒 Security Posture
 
-- Session-based authentication  
-- Role-based authorization  
-- Permission validation before actions  
-- Restricted access for unauthorized users  
-
----
-
-## Technologies Used
-
-- **Frontend:** JSP, HTML, CSS  
-- **Backend:** Java Servlets  
-- **Database:** MySQL  
-- **Server:** Apache Tomcat  
-- **IDE:** Eclipse  
-
----
-
-## Limitations
-
-- No user-based permission assignment (only role-based)  
-- No permission request system  
-- No audit logging  
-
----
-
-## Future Enhancements
-
-- Add user permission request feature  
-- Implement role hierarchy (Admin > Manager > User)  
-- Add audit logs for tracking activities  
-- Improve UI using modern frameworks  
-
----
-
-## Conclusion
-
-The RBAC system successfully demonstrates secure and scalable access control using roles and permissions. It ensures that users can only perform actions they are authorized for, improving system security and management.
-
-This project provides a strong foundation for building enterprise-level access control systems.
+- **Secured Credentials:** Database configurations are isolated in `.properties` files excluded via `.gitignore`.
+- **RBAC Filter Interception:** Core servlet `AuthFilter` protects all intelligence and task endpoints from unauthenticated access.
+- **Role Validation:** UI and backend endpoints strictly validate session role IDs before returning agent insights.

@@ -1,85 +1,47 @@
-<html>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <title>RBAC Login</title>
-
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(to right, #667eea, #764ba2);
-            margin: 0;
-            padding: 0;
-        }
-
-        .container {
-            width: 350px;
-            margin: 100px auto;
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            text-align: center;
-        }
-
-        h2 {
-            margin-bottom: 20px;
-            color: #333;
-        }
-
-        input {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-
-        button {
-            width: 100%;
-            padding: 10px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        button:hover {
-            background: #5a67d8;
-        }
-
-        .error {
-            color: red;
-            margin-bottom: 10px;
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IWAS — Login</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
-
 <body>
 
-<div class="container">
+<div class="login-wrapper">
+    <div class="login-card">
+        <div class="login-header">
+            <div class="login-logo">&#x1F916;</div>
+            <h2>IWAS</h2>
+            <p>Intelligent Workflow Agent System</p>
+        </div>
 
-    <h2>🔐 RBAC Login</h2>
+        <%
+        String error = request.getParameter("error");
+        if (error != null) {
+        %>
+            <div class="error-msg">&#x26A0; Invalid email or password. Please try again.</div>
+        <%
+        }
+        %>
 
-    <% 
-    String error = request.getParameter("error");
-    if (error != null) {
-    %>
-        <div class="error">Invalid email or password</div>
-    <% 
-    } 
-    %>
+        <form action="login" method="post" id="loginForm">
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" placeholder="Enter your email" required>
+            </div>
 
-    <form action="login" method="post">
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Enter your password" required>
+            </div>
 
-        <input type="text" name="email" placeholder="Enter Email" required>
-
-        <input type="password" name="password" placeholder="Enter Password" required>
-
-        <button type="submit">Login</button>
-
-    </form>
-
+            <button type="submit" class="btn btn-primary btn-lg" id="loginBtn">
+                &#x1F512; Sign In
+            </button>
+        </form>
+    </div>
 </div>
 
 </body>
